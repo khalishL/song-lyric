@@ -1,0 +1,152 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css"
+      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+      crossorigin="anonymous"
+    />
+    <style>
+      .header {
+        width: 100%;
+        padding: 12px;
+        background: teal;
+      }
+      .container {
+        display: flex;
+        width: 100%;
+      }
+      .lyrics-container {
+        width: 50%;
+        background: rgb(7, 168, 146);
+      }
+
+      .songs-container {
+        background: rgb(35, 215, 143);
+        width: 50%;
+      }
+      .song-item {
+        min-height: 36px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <div class="row">
+        <div class="col">
+          <input
+            type="text"
+            id="search-box"
+            class="form-control"
+            placeholder="Cari Lagu"
+          />
+        </div>
+        <div class="col">
+          <button onClick="triggerSearch()" class="btn btn-primary btn-block">
+            Cari
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <div class="songs-container" id="song-goes-here"></div>
+      <div class="lyrics-container" id="lyric-goes-here"></div>
+    </div>
+
+    <script>
+      // Fetch Song list
+      const fetchData = (query) => {
+        const url = `https://lyrics.azharimm.site/search?q=${query}`;
+        let response;
+
+        fetch(url)
+          .then((res) => {
+            res.json().then((object) => {
+              console.warn("hasil:", object);
+              resetList();
+              object.data.forEach((item) => {
+                // Create div and put class on it
+                const newDiv = document.createElement("div");
+                newDiv.classList.add("song-item");
+
+                // Create new content then insert to created div
+                newDiv.appendChild(
+                  document.createTextNode(`${item.artist} - ${item.songTitle}`)
+                );
+
+                // Add on click function
+                newDiv.onclick = () => {
+                  fetchLyric(item.songId);
+                };
+
+                // Insert created div into element with targeted id
+                document.getElementById("song-goes-here").appendChild(newDiv);
+              });
+            });
+          })
+          .catch((err) => {
+            console.warn("Error nih:", err);
+          });
+      };
+
+      // Trigger Fetch Song list by click button search
+      const triggerSearch = () => {
+        const searchText = document.getElementById("search-box").value;
+        console.warn("Cari dong", searchText);
+        fetchData(searchText);
+      };
+
+      // Reset song list
+      const resetList = () => {
+        const newsListElement = document.getElementById("song-goes-here");
+        let child = newsListElement.firstElementChild;
+        while (child) {
+          child.remove();
+          child = newsListElement.firstElementChild;
+        }
+      };
+
+      // Fetch Lyric
+      const fetchLyric = (songId) => {
+        console.warn("coba click lagu", songId);
+        const url = `https://lyrics.azharimm.site/lyrics/${songId}`;
+        let response;
+
+        fetch(url)
+          .then((res) => {
+            res.json().then((object) => {
+              console.warn("hasil:", object);
+              resetLyric();
+              const lyricElement = document.getElementById("lyric-goes-here");
+              const newDiv = document.createElement("div");
+              object.data.songLyricsArr.forEach((line) => {
+                const newLine = document.createElement("p");
+                newLine.appendChild(document.createTextNode(line));
+
+                newDiv.appendChild(newLine);
+              });
+
+              lyricElement.appendChild(newDiv);
+            });
+          })
+          .catch((err) => {
+            console.warn("Error nih:", err);
+          });
+      };
+
+      // Reset lyric
+      const resetLyric = () => {
+        const lyricElement = document.getElementById("lyric-goes-here");
+        let child = lyricElement.firstElementChild;
+        while (child) {
+          child.remove();
+          child = lyricElement.firstElementChild;
+        }
+      };
+    </script>
+  </body>
+</html>
